@@ -16,5 +16,9 @@
     {   "name":"Test Club",
         "email": "test@mail.com",
         "points":"1"
-}
+    },
+    {   "name":"max Club",
+        "email": "max@mail.com",
+        "points":"22"
+    }
 ]}
