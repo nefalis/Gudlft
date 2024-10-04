@@ -13,6 +13,7 @@ def test_reservation_success(client):
     competition = competitions[0]
 
     # Simuler une réservation valide
+    competition['date'] = "2025-01-01 10:00:00"
     response = client.post('/purchasePlaces', data={
         'competition': competition['name'],
         'club': club['name'],
@@ -51,6 +52,7 @@ def test_reservation_insufficient_places(client):
     })
     assert b"Not enough places available." in response.data
 
+
 def test_reservation_exceeding_limit(client):
     # Test si on tente de réserver plus de 12 places
     club = clubs[0]
@@ -64,3 +66,18 @@ def test_reservation_exceeding_limit(client):
         'places': 15
     })
     assert b"You cannot book more than 12 places per competition." in response.data
+
+
+def test_booking_past_competition(client):
+    club = clubs[0]
+    competition = competitions[0]
+
+    # Simuler une compétition dans le passé
+    competition['date'] = "2000-01-01 10:00:00"  # Date passée
+    response = client.post('/purchasePlaces', data={
+        'competition': competition['name'],
+        'club': club['name'],
+        'places': 1  # Indiquer le nombre de places à réserver
+    }, follow_redirects=True)
+
+    assert b"You cannot book places for a competition that has already ended." in response.data
