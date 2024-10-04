@@ -61,6 +61,11 @@ def purchasePlaces():
     
     placesRequired = int(request.form['places'])
 
+    # Vérification si le nombre de places demandées dépasse la limite de 12
+    if placesRequired > 12:
+        flash("You cannot book more than 12 places per competition.")
+        return render_template('welcome.html', club=club, competitions=competitions)
+
     # Vérification si le club a suffisamment de points
     pointsRequired = placesRequired
     if pointsRequired > int(club['points']):

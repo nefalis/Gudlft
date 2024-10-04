@@ -50,3 +50,17 @@ def test_reservation_insufficient_places(client):
         'places': 3
     })
     assert b"Not enough places available." in response.data
+
+def test_reservation_exceeding_limit(client):
+    # Test si on tente de réserver plus de 12 places
+    club = clubs[0]
+    competition = competitions[0]
+
+    # Simuler une tentative de réservation avec plus de 12 places
+    competition['numberOfPlaces'] = 20
+    response = client.post('/purchasePlaces', data={
+        'competition': competition['name'],
+        'club': club['name'],
+        'places': 15
+    })
+    assert b"You cannot book more than 12 places per competition." in response.data
