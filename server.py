@@ -29,6 +29,10 @@ clubs = loadClubs()
 def index():
     return render_template('index.html')
 
+@app.route('/pointsDisplay')
+def pointsDisplay():
+    return render_template('pointsDisplay.html', clubs=clubs)
+
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
     email = request.form.get('email')
