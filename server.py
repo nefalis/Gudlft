@@ -16,8 +16,7 @@ def loadCompetitions():
     
 def saveClubs(clubs):
     with open('clubs.json', 'w') as f:
-        json.dump({'clubs': clubs}, f)
-
+        json.dump({'clubs': clubs}, f, indent=4)
 
 app = Flask(__name__)
 app.secret_key = 'something_special'
