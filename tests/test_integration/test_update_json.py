@@ -1,6 +1,5 @@
 import json
 import pytest
-from flask import Flask
 from server import app
 
 

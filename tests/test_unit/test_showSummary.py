@@ -1,16 +1,19 @@
 import pytest
 from server import app
 
+
 @pytest.fixture
 def test_client():
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client
 
+
 def test_valid_mail(test_client):
     data = {'email': 'admin@irontemple.com'}
     response = test_client.post('/showSummary', data=data)
     assert response.status_code == 200
+
 
 def test_invalid_mail(test_client):
     data = {'email': 'novalid@mail.com'}

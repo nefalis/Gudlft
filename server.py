@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from flask import Flask,render_template,request,redirect,flash,url_for
+from flask import Flask, render_template, request, redirect, flash, url_for
 
 
 def loadClubs():
@@ -30,6 +30,7 @@ clubs = loadClubs()
 clubs_dict = {club['name']: club for club in clubs}
 competitions_dict = {competition['name']: competition for competition in competitions}
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -40,7 +41,7 @@ def pointsDisplay():
     return render_template('pointsDisplay.html', clubs=clubs)
 
 
-@app.route('/showSummary',methods=['POST'])
+@app.route('/showSummary', methods=['POST'])
 def showSummary():
     email = request.form.get('email')
     if not email:
@@ -56,7 +57,7 @@ def showSummary():
 
 
 @app.route('/book/<competition>/<club>')
-def book(competition,club):
+def book(competition, club):
     foundClub = clubs_dict.get(club)
     foundCompetition = competitions_dict.get(competition)
 
@@ -67,13 +68,13 @@ def book(competition,club):
         return render_template('welcome.html', club=foundClub, competitions=competitions)
 
     if foundClub and foundCompetition:
-        return render_template('booking.html',club=foundClub,competition=foundCompetition)
+        return render_template('booking.html', club=foundClub, competition=foundCompetition)
     else:
         flash("Something went wrong-please try again")
         return render_template('welcome.html', club=foundClub, competitions=competitions)
 
 
-@app.route('/purchasePlaces',methods=['POST'])
+@app.route('/purchasePlaces', methods=['POST'])
 def purchasePlaces():
     competition = competitions_dict.get(request.form['competition'])
     club = clubs_dict.get(request.form['club'])
@@ -81,13 +82,13 @@ def purchasePlaces():
     if not competition or not club:
         flash("Invalid club or competition.")
         return redirect(url_for('index'))
-    
+
     # Vérifier si la compétition est dans le passé
     competition_date = datetime.strptime(competition['date'], "%Y-%m-%d %H:%M:%S")
     if competition_date < datetime.now():
         flash("You cannot book places for a competition that has already ended.")
         return render_template('welcome.html', club=club, competitions=competitions)
-    
+
     placesRequired = int(request.form['places'])
 
     # Vérification si le nombre de places demandées dépasse la limite de 12
@@ -98,7 +99,7 @@ def purchasePlaces():
     # Vérification si le club a suffisamment de points
     pointsRequired = placesRequired
     if pointsRequired > int(club['points']):
-        flash(f"You don't have enough points.")
+        flash("You don't have enough points.")
 
     # Vérification si la compétition a suffisamment de places disponibles
     if placesRequired > int(competition['numberOfPlaces']):

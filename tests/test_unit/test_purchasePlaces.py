@@ -1,6 +1,7 @@
 import pytest
 from server import app, clubs, competitions
 
+
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
@@ -27,7 +28,7 @@ def test_reservation_insufficient_points(client):
     # Préparer les données avec un club n'ayant pas assez de points
     club = clubs[0]
     competition = competitions[0]
-    
+
     # Simuler une tentative de réservation où le club n'a pas assez de points
     club['points'] = 1
     response = client.post('/purchasePlaces', data={
