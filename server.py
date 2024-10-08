@@ -24,6 +24,10 @@ app.secret_key = 'something_special'
 competitions = loadCompetitions()
 clubs = loadClubs()
 
+# Créer des dictionnaires pour un accès rapide
+clubs_dict = {club['name']: club for club in clubs}
+competitions_dict = {competition['name']: competition for competition in competitions}
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -49,8 +53,8 @@ def showSummary():
 
 @app.route('/book/<competition>/<club>')
 def book(competition,club):
-    foundClub = [c for c in clubs if c['name'] == club][0]
-    foundCompetition = [c for c in competitions if c['name'] == competition][0]
+    foundClub = clubs_dict.get(club)
+    foundCompetition = competitions_dict.get(competition)
 
     # Vérifier si la compétition est dans le passé
     competition_date = datetime.strptime(foundCompetition['date'], "%Y-%m-%d %H:%M:%S")
@@ -68,8 +72,8 @@ def book(competition,club):
 @app.route('/purchasePlaces',methods=['POST'])
 def purchasePlaces():
 
-    competition = [c for c in competitions if c['name'] == request.form['competition']][0]
-    club = [c for c in clubs if c['name'] == request.form['club']][0]
+    competition = competitions_dict.get(request.form['competition'])
+    club = clubs_dict.get(request.form['club'])
 
     if not competition or not club:
         flash("Invalid club or competition.")
