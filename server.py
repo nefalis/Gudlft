@@ -13,10 +13,12 @@ def loadCompetitions():
     with open('competitions.json') as comps:
         listOfCompetitions = json.load(comps)['competitions']
         return listOfCompetitions
-    
+
+
 def saveClubs(clubs):
     with open('clubs.json', 'w') as f:
         json.dump({'clubs': clubs}, f, indent=4)
+
 
 app = Flask(__name__)
 app.secret_key = 'something_special'
@@ -32,9 +34,11 @@ competitions_dict = {competition['name']: competition for competition in competi
 def index():
     return render_template('index.html')
 
+
 @app.route('/pointsDisplay')
 def pointsDisplay():
     return render_template('pointsDisplay.html', clubs=clubs)
+
 
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
@@ -71,7 +75,6 @@ def book(competition,club):
 
 @app.route('/purchasePlaces',methods=['POST'])
 def purchasePlaces():
-
     competition = competitions_dict.get(request.form['competition'])
     club = clubs_dict.get(request.form['club'])
 

@@ -73,11 +73,11 @@ def test_booking_past_competition(client):
     competition = competitions[0]
 
     # Simuler une compétition dans le passé
-    competition['date'] = "2000-01-01 10:00:00"  # Date passée
+    competition['date'] = "2000-01-01 10:00:00"
     response = client.post('/purchasePlaces', data={
         'competition': competition['name'],
         'club': club['name'],
-        'places': 1  # Indiquer le nombre de places à réserver
+        'places': 1
     }, follow_redirects=True)
 
     assert b"You cannot book places for a competition that has already ended." in response.data
