@@ -4,16 +4,22 @@ from server import app, clubs, competitions
 
 @pytest.fixture
 def client():
+    """
+    Fixture to set up a test client for the Flask app
+    """
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client
 
 
 def test_reservation_success(client):
+    """
+    Test to check successful reservation
+    """
     club = clubs[0]
     competition = competitions[0]
 
-    # Simuler une réservation valide
+    # Simulate a valid reservation by setting a future competition date
     competition['date'] = "2025-01-01 10:00:00"
     response = client.post('/purchasePlaces', data={
         'competition': competition['name'],
@@ -25,11 +31,13 @@ def test_reservation_success(client):
 
 
 def test_reservation_insufficient_points(client):
-    # Préparer les données avec un club n'ayant pas assez de points
+    """
+    Test to check reservation failure due to insufficient club points
+    """
     club = clubs[0]
     competition = competitions[0]
 
-    # Simuler une tentative de réservation où le club n'a pas assez de points
+    # Set the club's points to a value less than the requested places
     club['points'] = 1
     response = client.post('/purchasePlaces', data={
         'competition': competition['name'],
@@ -40,11 +48,13 @@ def test_reservation_insufficient_points(client):
 
 
 def test_reservation_insufficient_places(client):
-    # Préparer les données avec une compétition n'ayant pas assez de places
+    """
+    Test to check reservation failure due to insufficient competition places
+    """
     club = clubs[0]
     competition = competitions[0]
 
-    # Simuler une tentative de réservation où il n'y a pas assez de places
+    # Set the number of available places in the competition to 2
     competition['numberOfPlaces'] = 2
     response = client.post('/purchasePlaces', data={
         'competition': competition['name'],
@@ -55,11 +65,13 @@ def test_reservation_insufficient_places(client):
 
 
 def test_reservation_exceeding_limit(client):
-    # Test si on tente de réserver plus de 12 places
+    """
+    Test to check reservation failure if the club requests more than 12 places
+    """
     club = clubs[0]
     competition = competitions[0]
 
-    # Simuler une tentative de réservation avec plus de 12 places
+    # Set the competition to have enough places (20)
     competition['numberOfPlaces'] = 20
     response = client.post('/purchasePlaces', data={
         'competition': competition['name'],
@@ -70,10 +82,13 @@ def test_reservation_exceeding_limit(client):
 
 
 def test_booking_past_competition(client):
+    """
+    Test to check booking failure for a competition that has already ended
+    """
     club = clubs[0]
     competition = competitions[0]
 
-    # Simuler une compétition dans le passé
+    # Set the competition date to a past date
     competition['date'] = "2000-01-01 10:00:00"
     response = client.post('/purchasePlaces', data={
         'competition': competition['name'],
