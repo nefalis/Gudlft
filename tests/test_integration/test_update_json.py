@@ -34,7 +34,7 @@ def test_update_json(client):
     with open('clubs.json') as f:
         updated_clubs_data = json.load(f)
 
-    # Verify that the club's points have been correctly updated 
+    # Verify that the club's points have been correctly updated
     updated_points = int(updated_clubs_data['clubs'][0]['points'])
     assert updated_points == initial_points - 2
 

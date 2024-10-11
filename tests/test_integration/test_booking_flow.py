@@ -1,4 +1,3 @@
-import json
 import pytest
 from server import app, loadClubs, loadCompetitions
 
@@ -15,9 +14,8 @@ def client():
 
 def test_integration_booking_flow(client):
     """
-    Test d'intégration pour vérifier le flux de réservation.
+    Integration test to verify the booking flow.
     """
-    # Charger l'état initial des clubs et compétitions
     clubs_data = loadClubs()
     competitions_data = loadCompetitions()
 
@@ -26,10 +24,7 @@ def test_integration_booking_flow(client):
     initial_points = int(initial_club['points'])
     initial_places = int(initial_competition['numberOfPlaces'])
 
-    # Ajouter des logs pour mieux suivre le déroulement du test
-    print(f"Avant réservation - Places disponibles: {initial_places}, Points du club: {initial_points}")
-
-    # Simuler la connexion
+    # Simulate the login
     login_response = client.post('/showSummary', data={
         'email': initial_club['email']
     }, follow_redirects=True)
@@ -43,24 +38,27 @@ def test_integration_booking_flow(client):
         'places': 3
     }, follow_redirects=True)
 
-    # Vérifier que la réservation a réussi
+    # Verify that the booking was successful
     assert booking_response.status_code == 200
     assert b'Great-booking complete!' in booking_response.data
 
-    # Charger l'état mis à jour des clubs et compétitions
+    # Load the updated state of the clubs and competitions
     updated_clubs_data = loadClubs()
     updated_competitions_data = loadCompetitions()
 
-    # Vérifier que les points et les places ont été mis à jour
+    # Verify that the points and places have been updated
     updated_club = next(club for club in updated_clubs_data if club['name'] == initial_club['name'])
-    updated_competition = next(comp for comp in updated_competitions_data if comp['name'] == initial_competition['name'])
+    updated_competition = next(
+        comp for comp in updated_competitions_data if comp['name'] == initial_competition['name']
+        )
 
     updated_points = int(updated_club['points'])
     updated_places = int(updated_competition['numberOfPlaces'])
 
-    # Ajouter des logs pour suivre les changements après la réservation
-    print(f"Après réservation - Places disponibles: {updated_places}, Points du club: {updated_points}")
-
-    # Vérifications des résultats après la réservation
-    assert updated_points == initial_points - 3, f"Erreur: points attendus: {initial_points - 3}, obtenus: {updated_points}"
-    assert updated_places == initial_places - 3, f"Erreur: places attendues: {initial_places - 3}, obtenues: {updated_places}"
+    # Check the results after booking
+    assert updated_points == initial_points - 3, (
+        f"Erreur: points attendus: {initial_points - 3}, obtenus: {updated_points}"
+        )
+    assert updated_places == initial_places - 3, (
+        f"Erreur: places attendues: {initial_places - 3}, obtenues: {updated_places}"
+        )

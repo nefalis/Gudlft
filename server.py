@@ -20,6 +20,8 @@ def loadCompetitions():
     """
     with open('competitions.json') as comps:
         listOfCompetitions = json.load(comps)['competitions']
+        for competition in listOfCompetitions:
+            competition['numberOfPlaces'] = int(competition['numberOfPlaces'])
         return listOfCompetitions
 
 
@@ -29,6 +31,7 @@ def saveClubs(clubs):
     """
     with open('clubs.json', 'w') as f:
         json.dump({'clubs': clubs}, f, indent=4)
+
 
 def saveCompetitions(competitions):
     """Save the updated list of competitions to the JSON file."""
