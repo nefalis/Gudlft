@@ -9,6 +9,8 @@ def loadClubs():
     """
     with open('clubs.json') as c:
         listOfClubs = json.load(c)['clubs']
+        for club in listOfClubs:
+            club['points'] = int(club['points'])
         return listOfClubs
 
 
@@ -27,6 +29,11 @@ def saveClubs(clubs):
     """
     with open('clubs.json', 'w') as f:
         json.dump({'clubs': clubs}, f, indent=4)
+
+def saveCompetitions(competitions):
+    """Save the updated list of competitions to the JSON file."""
+    with open('competitions.json', 'w') as f:
+        json.dump({'competitions': competitions}, f, indent=4)
 
 
 app = Flask(__name__)
@@ -137,6 +144,7 @@ def purchasePlaces():
     club['points'] = int(club['points']) - pointsRequired
 
     saveClubs(clubs)
+    saveCompetitions(competitions)
 
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)
