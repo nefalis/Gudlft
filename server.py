@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, flash, url_for
 
 def loadClubs():
     """
-    Load the list of clubs from a JSON file
+    Load the list of clubs from a JSON file.
     """
     with open('clubs.json') as c:
         listOfClubs = json.load(c)['clubs']
@@ -16,7 +16,7 @@ def loadClubs():
 
 def loadCompetitions():
     """
-    Load the list of competitions from a JSON file
+    Load the list of competitions from a JSON file.
     """
     with open('competitions.json') as comps:
         listOfCompetitions = json.load(comps)['competitions']
@@ -27,14 +27,16 @@ def loadCompetitions():
 
 def saveClubs(clubs):
     """
-    Save the updated list of clubs to the JSON file
+    Save the updated list of clubs to the JSON file.
     """
     with open('clubs.json', 'w') as f:
         json.dump({'clubs': clubs}, f, indent=4)
 
 
 def saveCompetitions(competitions):
-    """Save the updated list of competitions to the JSON file."""
+    """
+    Save the updated list of competitions to the JSON file.
+    """
     with open('competitions.json', 'w') as f:
         json.dump({'competitions': competitions}, f, indent=4)
 
@@ -42,11 +44,11 @@ def saveCompetitions(competitions):
 app = Flask(__name__)
 app.secret_key = 'something_special'
 
-# Load competitions and clubs from JSON files
+# Load competitions and clubs from JSON files.
 competitions = loadCompetitions()
 clubs = loadClubs()
 
-# Create dictionaries for quick access
+# Create dictionaries for quick access.
 clubs_dict = {club['name']: club for club in clubs}
 competitions_dict = {competition['name']: competition for competition in competitions}
 
@@ -54,7 +56,7 @@ competitions_dict = {competition['name']: competition for competition in competi
 @app.route('/')
 def index():
     """
-    Route for the homepage
+    Route for the homepage.
     """
     return render_template('index.html')
 
@@ -62,7 +64,7 @@ def index():
 @app.route('/pointsDisplay')
 def pointsDisplay():
     """
-    Route to display the points of all clubs
+    Route to display the points of all clubs.
     """
     return render_template('pointsDisplay.html', clubs=clubs)
 
@@ -70,7 +72,7 @@ def pointsDisplay():
 @app.route('/showSummary', methods=['POST'])
 def showSummary():
     """
-    Route to display a summary for the logged-in club
+    Route to display a summary for the logged-in club.
     """
     email = request.form.get('email')
     if not email:
@@ -88,18 +90,18 @@ def showSummary():
 @app.route('/book/<competition>/<club>')
 def book(competition, club):
     """
-    Route to book places for a competition
+    Route to book places for a competition.
     """
     foundClub = clubs_dict.get(club)
     foundCompetition = competitions_dict.get(competition)
 
-    # Check if the competition is in the past
+    # Check if the competition is in the past.
     competition_date = datetime.strptime(foundCompetition['date'], "%Y-%m-%d %H:%M:%S")
     if competition_date < datetime.now():
         flash("This competition has already ended.")
         return render_template('welcome.html', club=foundClub, competitions=competitions)
 
-    # If both club and competition exist, proceed to the booking page
+    # If both club and competition exist, proceed to the booking page.
     if foundClub and foundCompetition:
         return render_template('booking.html', club=foundClub, competition=foundCompetition)
     else:
@@ -110,52 +112,93 @@ def book(competition, club):
 @app.route('/purchasePlaces', methods=['POST'])
 def purchasePlaces():
     """
-    Route to handle the purchase of competition places
+    Route to handle the purchase of competition places.
     """
-    competition = competitions_dict.get(request.form['competition'])
-    club = clubs_dict.get(request.form['club'])
+    competition_name = request.form.get('competition')
+    club_name = request.form.get('club')
+    places_required = request.form.get('places')
+
+    # Check if the club and competition exist.
+    competition = competitions_dict.get(competition_name)
+    club = clubs_dict.get(club_name)
 
     if not competition or not club:
         flash("Invalid club or competition.")
         return redirect(url_for('index'))
 
-    # Check if the competition is in the past
-    competition_date = datetime.strptime(competition['date'], "%Y-%m-%d %H:%M:%S")
-    if competition_date < datetime.now():
+    # Validate the number of requested places.
+    if not places_required.isdigit() or int(places_required) <= 0:
+        flash("Invalid number of places.")
+        return render_template('welcome.html', club=club, competitions=competitions)
+
+    places_required = int(places_required)
+
+    # Check if the competition is still active.
+    if not is_competition_active(competition):
         flash("You cannot book places for a competition that has already ended.")
         return render_template('welcome.html', club=club, competitions=competitions)
 
-    placesRequired = int(request.form['places'])
-
-    # Check if the number of requested places exceeds the 12-place limit
-    if placesRequired > 12:
+    # Ensure the requested places don't exceed the 12-place limit.
+    if places_required > 12:
         flash("You cannot book more than 12 places per competition.")
         return render_template('welcome.html', club=club, competitions=competitions)
 
-    # Check if the club has enough points
-    pointsRequired = placesRequired
-    if pointsRequired > int(club['points']):
-        flash("You don't have enough points.")
-
-    # Check if the competition has enough available places
-    if placesRequired > int(competition['numberOfPlaces']):
+    # Check if the competition has enough available places.
+    if not has_sufficient_places(competition, places_required):
         flash("Not enough places available.")
         return render_template('welcome.html', club=club, competitions=competitions)
 
-    # Update the number of places and points
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
-    club['points'] = int(club['points']) - pointsRequired
+    # Check if the club has enough points.
+    if not has_sufficient_points(club, places_required):
+        flash("You don't have enough points.")
+        return render_template('welcome.html', club=club, competitions=competitions)
+
+    # Update the number of places and points.
+    process_booking(competition, club, places_required)
+
+    flash('Great-booking complete!')
+
+    return render_template('welcome.html', club=club, competitions=competitions)
+
+
+def is_competition_active(competition):
+    """
+    Checks if the competition is still active.
+    """
+    competition_date = datetime.strptime(competition['date'], "%Y-%m-%d %H:%M:%S")
+    return competition_date >= datetime.now()
+
+
+def has_sufficient_points(club, points_required):
+    """
+    Checks if the club has enough points to book the required places.
+    """
+    print(f"Checking points: {club['points']} available, {points_required} required.")
+    return int(club['points']) >= points_required
+
+
+def has_sufficient_places(competition, places_required):
+    """
+    Checks if the competition has enough available places.
+    """
+    print(f"Checking places: {competition['numberOfPlaces']} available, {places_required} required.")
+    return int(competition['numberOfPlaces']) >= places_required
+
+
+def process_booking(competition, club, places_required):
+    """
+    Updates the number of available places in the competition and the club's points.
+    """
+    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - places_required
+    club['points'] = int(club['points']) - places_required
 
     saveClubs(clubs)
     saveCompetitions(competitions)
-
-    flash('Great-booking complete!')
-    return render_template('welcome.html', club=club, competitions=competitions)
 
 
 @app.route('/logout')
 def logout():
     """
-    Route to handle user logout
+    Route to handle user logout.
     """
     return redirect(url_for('index'))

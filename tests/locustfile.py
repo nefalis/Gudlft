@@ -2,8 +2,8 @@ from locust import HttpUser, between, task
 
 
 class MyUser(HttpUser):
-    host = "http://localhost:5000"
-    wait_time = between(1, 3)
+    host = "http://127.0.0.1:5000"
+    wait_time = between(1, 5)
 
     @task
     def index(self):
@@ -27,11 +27,10 @@ class MyUser(HttpUser):
         # Tester l'achat de places
         competition_name = "Spring Festival"
         club_name = "Test Club"
-        places = 2
         self.client.post("/purchasePlaces", data={
             "competition": competition_name,
             "club": club_name,
-            "places": places}
+            "places": "5"}
             )
 
     @task

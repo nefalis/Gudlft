@@ -3,7 +3,7 @@
         {
             "name": "Spring Festival",
             "date": "2025-01-01 10:00:00",
-            "numberOfPlaces": 4
+            "numberOfPlaces": 6
         },
         {
             "name": "Fall Classic",
@@ -17,8 +17,8 @@
         },
         {
             "name": "future compet",
-            "date": "2025-10-22 13:30:00",
-            "numberOfPlaces": 14
+            "date": "2025-01-01 10:00:00",
+            "numberOfPlaces": 36
         }
     ]
 }
